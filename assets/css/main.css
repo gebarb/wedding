@@ -19,6 +19,9 @@ body {
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 100% auto;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
   margin: 128px;
 }
 
