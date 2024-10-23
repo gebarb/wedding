@@ -1,9 +1,9 @@
 <template>
-    <div>
+    <div class="background">
         <slot />
     </div>
 </template>
 
-<style lang="css">
+<style scoped lang="css">
     @import url("~/assets/css/home.css");
 </style>
