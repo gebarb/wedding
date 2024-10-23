@@ -26,3 +26,7 @@ export default {
     },
 };
 </script>
+
+<style lang="css">
+@import url("~/assets/css/menu.css");
+</style>
