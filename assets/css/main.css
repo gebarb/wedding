@@ -34,7 +34,6 @@ button {
   margin: 0;
   overflow: visible;
   text-transform: none;
-  -webkit-appearance: button;
 }
 
 [type="button"]:not(:disabled),

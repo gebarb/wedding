@@ -1,15 +1,7 @@
-<script setup lang="ts">
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
-
-library.add(faBars);
-</script>
-
 <template>
     <nav class="navbar">
         <button @click="toggleMenu" class="navbar-toggler">
-            <FontAwesomeIcon icon="fa-bars" class="navbar-toggle-icon"></FontAwesomeIcon>
+            <font-awesome-icon icon="fa-solid fa-bars" class="navbar-toggle-icon" />
         </button>
         <div class="navbar-menu collapse" :class="{ 'show': isMobileMenuOpen }">
             <div class="navbar-nav">
