@@ -1,13 +1,11 @@
 <template>
     <div>
-        <h1>Wedding Information</h1>
+        <h1>Frequently Asked Questions</h1>
     </div>
-
-
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-    layout: "faq"
-})
+    definePageMeta({
+        layout: "faq"
+    });
 </script>

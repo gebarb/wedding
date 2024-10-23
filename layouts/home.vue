@@ -1,10 +1,9 @@
 <template>
     <div>
         <slot />
-
     </div>
 </template>
 
-<script>
-    import "~/assets/css/home.css";
-</script>
+<style lang="css">
+    @import url("~/assets/css/home.css");
+</style>
