@@ -1,9 +1,9 @@
 <template>
-    <div class="background">
+    <div class="background save-the-date">
         <slot />
     </div>
 </template>
 
-<style scoped lang="css">
+<style lang="css">
     @import url("~/assets/css/home.css");
 </style>
