@@ -20,10 +20,6 @@
   font-size: 1.25rem;
   line-height: 1;
   padding: 0.25rem 0.75rem;
-  /* Dark */
-  /* border-color: hsla(0, 0%, 100%, 0.1);
-  color: hsla(0, 0%, 100%, 0.5); */
-  /* Light */
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.5);
 }

@@ -1,9 +1,3 @@
-h1 {
-  margin: auto;
-  text-align: center;
-  color: whitesmoke;
-}
-
 body {
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
@@ -20,6 +14,15 @@ body {
 :after,
 :before {
   box-sizing: border-box;
+}
+
+h1,
+h2,
+p {
+  margin: auto;
+  text-align: center;
+  /* color: darksalmon; */
+  color: black
 }
 
 a {
@@ -39,4 +42,10 @@ button {
 [type="button"]:not(:disabled),
 button:not(:disabled) {
   cursor: pointer;
+}
+
+.content {
+  position: relative;
+  top: 25%;
+  transform: translateY(-25%);
 }
