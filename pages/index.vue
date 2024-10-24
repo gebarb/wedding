@@ -4,17 +4,17 @@
         <br>
         <h2>Grayson & Alessandra</h2>
         <br>
-        <p>
+        <h3>
             September 13<sup>th</sup>, 2025 @ 6 PM
-        </p>
+        </h3>
         <br>
-        <p>
+        <h3>
             The Barn @ Wolf Ridge Farm
-        </p>
+        </h3>
         <br>
-        <p>
+        <h3>
             1467 FM 1200, Gainesville, TX 76240
-        </p>
+        </h3>
     </div>
 </template>
 
