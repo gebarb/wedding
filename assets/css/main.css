@@ -74,6 +74,7 @@ button:not(:disabled) {
 
 .content {
   position: relative;
+  padding-top: 24px;
   padding-bottom: 96px;
 }
 
