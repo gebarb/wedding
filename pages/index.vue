@@ -4,7 +4,9 @@
         <div class="content">
             <h1>Save The Date</h1>
             <br>
-            <h2>Alessandra Rodriguez & Grayson Ebarb</h2>
+            <h2>Alessandra Rodriguez</h2>
+            <h2>&</h2>
+            <h2>Grayson Ebarb</h2>
             <hr class="rounded">
             <br>
             <h3>

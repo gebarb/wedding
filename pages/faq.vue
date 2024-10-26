@@ -15,7 +15,6 @@
         <br>    
         <h3>Question 4</h3>
         <p>Here is an answer to Question 4</p>
-        <br>
 </div>
 </template>
 
