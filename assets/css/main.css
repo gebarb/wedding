@@ -70,6 +70,7 @@ button:not(:disabled) {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  background-attachment: scroll;
 }
 
 .content {

@@ -1,5 +1,6 @@
 .banner.save-the-date {
   background: url(~/assets/img/Grand_Marlin_Proposal-3.jpg);
+  /* background: url(~/assets/img/IMG_0753.jpg); */
   background-attachment: fixed;
   background-position: center center;
   background-repeat: no-repeat;
@@ -9,4 +10,19 @@
   background-size: cover;
   background-color: rgba(255, 255, 255, 0.25);
   background-blend-mode: lighten;
-} 
+}
+
+@media (max-width: 992px) {
+  .banner.save-the-date {
+    background: url(~/assets/img/Grand_Marlin_Proposal-4.jpg);
+    background-attachment: fixed;
+    background-position: center center;
+    background-repeat: no-repeat;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    background-color: rgba(255, 255, 255, 0.25);
+    background-blend-mode: lighten;
+  }
+}
