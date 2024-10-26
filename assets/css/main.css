@@ -62,7 +62,7 @@ button:not(:disabled) {
 }
 
 .background {
-  background-color: #ffece1;
+  background: radial-gradient(#ffece1, peachpuff);
 }
 
 .banner {
