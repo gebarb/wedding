@@ -1,5 +1,5 @@
 <template>
-    <div class="background save-the-date">
+    <div class="background">
         <slot />
     </div>
 </template>

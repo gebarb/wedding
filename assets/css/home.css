@@ -1,4 +1,4 @@
-.background.save-the-date {
+.banner.save-the-date {
   background: url(~/assets/img/Grand_Marlin_Proposal-3.jpg);
   background-attachment: fixed;
   background-position: center center;
@@ -6,6 +6,4 @@
   background-size: cover;
   background-color: rgba(255, 255, 255, 0.25);
   background-blend-mode: lighten;
-  width: 100vw;
-  height: 100vh;
 }

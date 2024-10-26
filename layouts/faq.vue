@@ -1,5 +1,5 @@
 <template>
-    <div class="background faq">
+    <div class="background">
         <slot />
     </div>
 </template>
