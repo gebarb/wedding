@@ -19,6 +19,7 @@ body {
 }
 
 h1,
+h2,
 h3,
 h4,
 p {
@@ -31,9 +32,12 @@ h2 {
   font-family: "Meow Script", cursive;
   font-style: normal;
   font-size: 3rem;
-  margin: auto;
-  text-align: center;
-  color: brown;
+}
+
+hr.rounded {
+  border-top: 2px solid brown;
+  border-radius: 5px;
+  width: 50%;
 }
 
 a {

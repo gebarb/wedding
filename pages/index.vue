@@ -5,6 +5,7 @@
             <h1>Save The Date</h1>
             <br>
             <h2>Alessandra Rodriguez & Grayson Ebarb</h2>
+            <hr class="rounded">
             <br>
             <h3>
                 September 13<sup>th</sup>, 2025 @ 6 PM
