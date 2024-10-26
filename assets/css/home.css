@@ -1,6 +1,5 @@
 .banner.save-the-date {
   background: url(~/assets/img/Grand_Marlin_Proposal-3.jpg);
-  /* background: url(~/assets/img/IMG_0753.jpg); */
   background-attachment: fixed;
   background-position: center center;
   background-repeat: no-repeat;
@@ -14,7 +13,7 @@
 
 @media (max-width: 992px) {
   .banner.save-the-date {
-    background: url(~/assets/img/Grand_Marlin_Proposal-4.jpg);
+    background: url(~/assets/img/Grand_Marlin_Proposal-4-Cropped.jpg);
     background-attachment: fixed;
     background-position: center center;
     background-repeat: no-repeat;

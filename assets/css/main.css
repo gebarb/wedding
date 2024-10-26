@@ -99,8 +99,3 @@ button:not(:disabled) {
   filter: blur(1rem);
 }
 
-@media (min-width: 992px) {
-  .banner {
-    background-attachment: scroll;
-  }
-}
