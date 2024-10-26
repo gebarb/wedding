@@ -1,7 +1,10 @@
 body {
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-    Helvetica Neue, Arial, Noto Sans, Liberation Sans, sans-serif,
-    Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-family: "Playfair Display", serif, -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, Liberation Sans,
+    sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol,
+    Noto Color Emoji;
+  font-optical-sizing: auto;
+  font-style: normal;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
@@ -16,10 +19,18 @@ body {
 }
 
 h1,
-h2,
 h3,
 h4,
 p {
+  margin: auto;
+  text-align: center;
+  color: brown;
+}
+
+h2 {
+  font-family: "Meow Script", cursive;
+  font-style: normal;
+  font-size: 3rem;
   margin: auto;
   text-align: center;
   color: brown;
