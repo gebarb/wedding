@@ -9,7 +9,6 @@
   background-size: cover;
 }
 
-
 @media (max-width: 992px) {
   .banner.faq {
     background: url(~/assets/img/IMG_0753.jpg);
