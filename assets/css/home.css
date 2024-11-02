@@ -21,3 +21,9 @@
     background-size: cover;
   }
 }
+
+.google-map {
+  width: 50vw;
+  height: 50vh;
+  border: 0;
+}

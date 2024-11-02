@@ -76,6 +76,8 @@ button:not(:disabled) {
   position: relative;
   padding-top: 24px;
   padding-bottom: 96px;
+  text-align: center;
+  margin: auto;
 }
 
 .page-enter-active,
