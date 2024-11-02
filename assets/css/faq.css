@@ -1,6 +1,6 @@
 .banner.faq {
   background: url(~/assets/img/Grand_Marlin_Proposal-63.jpg);
-  background-attachment: fixed;
+  background-attachment: scroll;
   background-position: center center;
   background-repeat: no-repeat;
   -webkit-background-size: cover;
@@ -12,7 +12,7 @@
 @media (max-width: 992px) {
   .banner.faq {
     background: url(~/assets/img/IMG_0753.jpg);
-    background-attachment: fixed;
+    background-attachment: scroll;
     background-position: center center;
     background-repeat: no-repeat;
     -webkit-background-size: cover;

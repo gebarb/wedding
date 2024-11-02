@@ -6,8 +6,6 @@
   justify-content: space-between;
   padding-top: 24px;
   padding-bottom: 24px;
-  /* flex-flow: row nowrap; */
-  /* justify-content: flex-start; */
 }
 
 .footer .nav-link {
@@ -37,7 +35,8 @@
 }
 
 @media (min-width: 992px) {
-  .footer .nav-link {
+  .footer {
     display: none;
+    padding: 0;
   }
 }
