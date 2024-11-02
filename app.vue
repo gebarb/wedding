@@ -9,6 +9,7 @@
     <NuxtLayout>
       <Menu></Menu>
       <NuxtPage />
+      <Footer></Footer>
     </NuxtLayout>
   </div>
 </template>

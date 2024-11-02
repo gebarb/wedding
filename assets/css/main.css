@@ -79,6 +79,7 @@ button:not(:disabled) {
   padding-left: 8px;
   padding-right: 8px;
   text-align: center;
+  align-items: center;
   margin: auto;
 }
 
