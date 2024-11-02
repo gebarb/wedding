@@ -1,6 +1,6 @@
 <template>
     <h3>{{ faqItem.question }}</h3>
-    <p>{{ faqItem.answer }}</p>
+    <p v-html="faqItem.answer"></p>
     <br>
 </template>
 

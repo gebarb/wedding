@@ -2,7 +2,7 @@
     <div>
         <div class="banner save-the-date"></div>
         <div class="content">
-            <h1>Save The Date</h1>
+            <h1><i>Save The Date</i></h1>
             <br>
             <h2>Alessandra Rodriguez</h2>
             <h2>&</h2>
