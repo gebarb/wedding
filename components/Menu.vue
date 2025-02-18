@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar">
         <button @click="toggleMenu" class="navbar-toggler">
-            <font-awesome-icon icon="fa-solid fa-bars" class="navbar-toggle-icon" />
+            <font-awesome-icon icon="fa-solid fa-bars" class="navbar-toggler-icon" />
         </button>
         <div class="navbar-menu collapse" :class="{ 'show': isMobileMenuOpen }">
             <div class="navbar-nav">

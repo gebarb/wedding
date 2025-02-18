@@ -83,8 +83,12 @@
   width: 0;
 }
 
+.navbar .navbar-nav .nav-link:hover:before {
+  width: 36px;
+}
+
 .navbar .navbar-nav .nav-link.router-link-active:before {
-  width: 35px;
+  width: 36px;
 }
 
 @media (min-width: 992px) {
