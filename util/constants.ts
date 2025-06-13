@@ -11,5 +11,4 @@ export const THE_KNOT_URL: string =
   "https://www.theknot.com/us/alessandra-rodriguez-and-grayson-ebarb-sep-2025/rsvp";
 export const VENMO_URL: string = "https://www.venmo.com/u/ebarbwedding";
 
-
 // TODO: Convert constants into a plugin

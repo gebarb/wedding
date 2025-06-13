@@ -44,7 +44,6 @@ hr.rounded {
 
 a {
   background-color: initial;
-  color: black;
   text-decoration: none;
   transition: color 0.25s ease-in-out;
 }
