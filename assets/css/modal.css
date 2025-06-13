@@ -1,0 +1,32 @@
+.modal-overlay {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.75);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+}
+
+.modal {
+  text-align: center;
+  background: radial-gradient(#ffece1, peachpuff);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 25%;
+  padding: 24px 0;
+  border-radius: 24px;
+}
+
+.close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin: 8px 12px 0 0;
+  cursor: pointer;
+  color: brown;
+}

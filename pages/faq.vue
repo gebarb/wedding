@@ -1,14 +1,18 @@
 <template>
-    <div class="banner faq"></div>
-    <div class="content">
-        <h1>Frequently Asked Questions</h1>
-        <hr class="rounded">
-        <FaqItem v-for="faqItem in faq" :faqItem="faqItem" :key="faqItem.id">
-        </FaqItem>
+    <div>
+        <div class="banner faq"></div>
+        <div class="content">
+            <h1>Frequently Asked Questions</h1>
+            <hr class="rounded">
+            <FaqItem v-for="faqItem in faq" :faqItem="faqItem" :key="faqItem.id"></FaqItem>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import { AMAZON_URL, CASHAPP_URL, HILTON_URL, MARRIOTT_URL, THE_KNOT_URL, VENMO_URL } from '~/util/constants';
+
+
 definePageMeta({
     layout: "faq"
 });
@@ -39,20 +43,20 @@ const faq = [
         question: "Are Children Invited?",
         answer: "While we love your children, the Ceremony and Reception will be an Adults Only celebration.<br>Thank you for making the necessary arrangements."
     },
-    // {
-    //     id: 6,
-    //     question: "How Should I RSVP?",
-    //     answer: "You may RSVP via our website by clicking the <a href='https://www.google.com' target='_blank'>RSVP</a> option in the menu.<br>Please indicate your name and attendance by filling out the form by August 1<sup>st</sup> 2025."
-    // },
-    // {
-    //     id: 7,
-    //     question: "Where Is The Registry?",
-    //     answer: "You may find our Registry by clicking the <a href='https://www.amazon.com' target='_blank'>Registry</a> option in the menu.<br>We also welcome other gifting options, including cash."
-    // },
+    {
+        id: 6,
+        question: "How Should I RSVP?",
+        answer: `You may RSVP via our website by clicking the <a href='${THE_KNOT_URL}' target='_blank'>RSVP</a> option in the menu.<br>Please indicate your name and attendance by filling out the form by August 1<sup>st</sup> 2025.`
+    },
+    {
+        id: 7,
+        question: "Where Is The Registry?",
+        answer: `You may find our Registry by clicking the <a>Registry</a> option in the menu.<br>We welcome multiple gifting options to build our home and family - including cash, <a href='${CASHAPP_URL}' target='_blank'>CashApp</a>, <a href='${VENMO_URL}' target='_blank'>Venmo</a>, and <a href='${AMAZON_URL}' target='_blank'>Amazon</a>.`
+    },
     {
         id: 8,
         question: "Where Can I Stay?",
-        answer: "The Wedding Venue is located just a short distance off of I-35 in Gainesville, Texas.<br>We recommend one of the many reasonable accomodations nearby in Gainesville and Lindsay such as <a href='https://www.marriott.com/en-us/hotels/glefi-fairfield-inn-and-suites-gainesville-i-35/overview/' target='_blank'>Fairfield Inn & Suites</a>, <a href='https://www.hilton.com/en/hotels/gvitxhx-hampton-suites-gainesville/' target='_blank'>Hampton Inn & Suites</a>, or an AirBnB."
+        answer: `The Wedding Venue is located just a short distance off of I-35 in Gainesville, Texas.<br>We recommend one of the many reasonable accomodations nearby in Gainesville and Lindsay such as <a href='${MARRIOTT_URL}' target='_blank'>Fairfield Inn & Suites</a>, <a href='${HILTON_URL}' target='_blank'>Hampton Inn & Suites</a>, or an AirBnB.`
     },
     {
         id: 9,

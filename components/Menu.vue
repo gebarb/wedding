@@ -7,24 +7,30 @@
             <div class="navbar-nav">
                 <NuxtLink class="nav-link" to="/">Home</NuxtLink>
                 <NuxtLink class="nav-link" to="/faq">FAQ</NuxtLink>
-                <!-- <NuxtLink class="nav-link" to="https://www.amazon.com" target="_blank">Registry</NuxtLink> -->
-                <!-- <NuxtLink class="nav-link" to="https://www.google.com" target="_blank">RSVP</NuxtLink> -->
+                <NuxtLink class="nav-link" @click="$emit('open-modal')">Registry</NuxtLink>
+                <NuxtLink class="nav-link" @click="navigate('/faq')" :to="theKnotUrl" target="_blank">RSVP</NuxtLink>
             </div>
         </div>
     </nav>
 </template>
 
 <script lang="ts">
+import { THE_KNOT_URL } from '~/util/constants';
+
 export default {
     data() {
         return {
             isMobileMenuOpen: false,
+            theKnotUrl: THE_KNOT_URL
         };
     },
     methods: {
         toggleMenu() {
             this.isMobileMenuOpen = !this.isMobileMenuOpen;
         },
+        navigate(path: string) {
+            return navigateTo(path);
+        }
     },
 };
 </script>

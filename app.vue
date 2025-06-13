@@ -3,19 +3,34 @@
 </style>
 
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtLoadingIndicator :throttle=0 :height=8 />
-    <NuxtLayout>
-      <Menu></Menu>
-      <NuxtPage />
-      <Footer></Footer>
-    </NuxtLayout>
-  </div>
+  <NuxtRouteAnnouncer />
+  <NuxtLoadingIndicator :throttle=0 :height=8 />
+  <NuxtLayout>
+    <Menu @open-modal="toggleModal"></Menu>
+    <NuxtPage />
+    <Footer @open-modal="toggleModal"></Footer>
+  </NuxtLayout>
+  <RegistryModal v-show="showModal" @close-modal="toggleModal" />
 </template>
 
 <script setup lang="ts">
 useHead({
   titleTemplate: "%s • Ebarb Wedding",
 });
+</script>
+
+<script lang="ts">
+
+export default {
+  data() {
+    return {
+      showModal: false,
+    }
+  },
+  methods: {
+    toggleModal() {
+      this.showModal = !this.showModal;
+    },
+  }
+};
 </script>

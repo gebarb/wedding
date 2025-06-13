@@ -8,7 +8,7 @@
   left: 0;
   right: 0;
   top: 0;
-  z-index: 1030;
+  z-index: 100;
   align-items: center;
   display: flex;
   flex-wrap: wrap;
@@ -46,7 +46,7 @@
 }
 
 .navbar-nav {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   list-style: none;
   margin-bottom: 0;
@@ -67,7 +67,8 @@
 }
 
 .nav-link {
-  display: block;
+  display: inline-block;
+  cursor: pointer;
   padding: 0.5rem 1rem;
 }
 

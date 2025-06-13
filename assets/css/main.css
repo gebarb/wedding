@@ -83,6 +83,10 @@ button:not(:disabled) {
   margin: auto;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 .page-enter-active,
 .page-leave-active {
   transition: all 0.2s;
