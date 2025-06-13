@@ -51,7 +51,7 @@ const faq = [
     {
         id: 7,
         question: "Where Is The Registry?",
-        answer: `You may find our Registry by clicking the <a>Registry</a> option in the menu.<br>We welcome multiple gifting options to build our home and family - including cash, <a href='${CASHAPP_URL}' target='_blank'>CashApp</a>, <a href='${VENMO_URL}' target='_blank'>Venmo</a>, and <a href='${AMAZON_URL}' target='_blank'>Amazon</a>.`
+        answer: `You may find our Registry by clicking the <a>Registry</a> option in the menu.<br>We welcome multiple gifting options to help us build our home and family - including cash, <a href='${CASHAPP_URL}' target='_blank'>CashApp</a>, <a href='${VENMO_URL}' target='_blank'>Venmo</a>, and <a href='${AMAZON_URL}' target='_blank'>Amazon</a>.`
     },
     {
         id: 8,
