@@ -1,3 +1,7 @@
+p a {
+  color: black;
+}
+
 .banner.faq {
   background: url(~/assets/img/Grand_Marlin_Proposal-63.jpg);
   background-attachment: scroll;
