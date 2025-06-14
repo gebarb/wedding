@@ -10,7 +10,7 @@
             <hr class="rounded">
             <br>
             <h3>
-                September 13<sup>th</sup>, 2025 @ 6 PM
+                Saturday, September 13<sup>th</sup>, 2025 @ 6 PM
             </h3>
             <br>
             <h3>
