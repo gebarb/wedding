@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { AMAZON_URL, CASHAPP_URL, HILTON_URL, MARRIOTT_URL, THE_KNOT_URL, VENMO_URL } from '~/util/constants';
+import { AMAZON_URL, CASHAPP_URL, HILTON_URL, LINDSAY_URL, MARRIOTT_URL, THE_KNOT_URL, VENMO_URL } from '~/util/constants';
 
 
 definePageMeta({
@@ -56,12 +56,17 @@ const faq = [
     {
         id: 8,
         question: "Where Can I Stay?",
-        answer: `The Wedding Venue is located just a short distance off of I-35 in Gainesville, Texas.<br>We recommend one of the many reasonable accomodations nearby in Gainesville and Lindsay such as <a href='${MARRIOTT_URL}' target='_blank'>Fairfield Inn & Suites</a>, <a href='${HILTON_URL}' target='_blank'>Hampton Inn & Suites</a>, or an AirBnB.`
+        answer: `The Wedding Venue is located just a short distance off of I-35 in Gainesville, Texas.<br>We recommend one of the many reasonable accomodations nearby in Gainesville and Lindsay.<br>This includes <a href='${MARRIOTT_URL}' target='_blank'>Fairfield Inn & Suites</a>, <a href='${HILTON_URL}' target='_blank'>Hampton Inn & Suites</a>, <a href='${LINDSAY_URL}' target='_blank'>Lindsay Inn</a> or an AirBnB.`
     },
     {
         id: 9,
         question: "Will There Be Parking At The Venue?",
         answer: "There will be parking available in a large gravel lot.<br>However, please plan your trip responsibly."
     },
+    {
+        id: 10,
+        question: "What's The Best Way To Get Home After The Reception?",
+        answer: "We kindly ask that you plan your travel ater the reception by carpooling with family or friends,<br>as rideshare options like Uber & Lyft will be limited in our small-town location."
+    }
 ];
 </script>
