@@ -66,7 +66,7 @@ const faq = [
     {
         id: 10,
         question: "What's The Best Way To Get Home After The Reception?",
-        answer: "We kindly ask that you plan your travel ater the reception by carpooling with family or friends,<br>as rideshare options like Uber & Lyft will be limited in our small-town location."
+        answer: "We kindly ask that you plan your travel after the reception by carpooling with family or friends,<br>as rideshare options like Uber & Lyft will be limited in our small-town location."
     }
 ];
 </script>
