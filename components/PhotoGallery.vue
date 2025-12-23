@@ -15,7 +15,7 @@ const page = ref(1);
 const screenWidth = ref(0);
 const isMobile = computed(() => screenWidth.value < 768);
 const columns = computed(() => isMobile.value ? 1 : 3);
-const perPage = computed(() => isMobile.value ? 3 : 6); // Initial load count
+const perPage = computed(() => 6); // Initial load count
 
 // Fetch images from S3 with infinite scroll
 const fetchImages = async (retryAttempt = 0) => {
