@@ -11,16 +11,33 @@
 }
 
 .modal {
-  text-align: center;
-  background: radial-gradient(#ffece1, peachpuff);
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 25%;
-  padding: 24px 0;
+  width: 85%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: radial-gradient(#ffece1, peachpuff);
   border-radius: 24px;
   color: brown;
+  padding: 0;
+}
+
+.modal-content {
+  position: relative;
+  padding: 2.5rem 2rem 2rem;
+}
+
+.registry-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+  text-align: center;
 }
 
 .modal .nav-link {
@@ -29,10 +46,10 @@
 
 .close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,7 +58,7 @@
   border-radius: 50%;
   cursor: pointer;
   color: brown;
-  font-size: 1.25rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -51,6 +68,25 @@
   background: #fff5f5;
   transform: scale(1.1);
   border-color: rgba(165, 42, 42, 0.3);
+}
+
+@media (min-width: 768px) {
+  .modal {
+    width: 50%;
+    max-width: 450px;
+  }
+  
+  .modal-content {
+    padding: 3rem 2.5rem 2.5rem;
+  }
+  
+  .close {
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+  }
 }
 
 .close:focus {
