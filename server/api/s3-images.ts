@@ -1,5 +1,19 @@
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
+// Debug function to log request details
+function logRequestInfo(event: any, message: string, data?: any) {
+  const requestId = event.node.req.headers['x-request-id'] || 'no-request-id';
+  const logData = {
+    timestamp: new Date().toISOString(),
+    requestId,
+    path: event.node.req.url,
+    method: event.node.req.method,
+    message,
+    ...(data && { data })
+  };
+  console.log(JSON.stringify(logData, null, 2));
+}
+
 export default defineEventHandler(async (event) => {
   // Ensure this is a GET request
   if (event.node.req.method !== 'GET') {
@@ -19,25 +33,41 @@ export default defineEventHandler(async (event) => {
   // Initialize S3 client for public bucket
   const s3Client = new S3Client({
     region: s3Config.region,
-    // For public bucket, we need to explicitly set credentials to undefined
-    // and use a custom signer that doesn't require credentials
-    credentials: undefined,
-    // Use path style for better compatibility
-    forcePathStyle: true,
-    // Custom signer that bypasses the default signing process
+    credentials: undefined, // For public bucket
     signer: {
-      sign: async (request) => {
-        // Remove any Authorization header that might be added automatically
-        delete request.headers['authorization'];
-        delete request.headers['Authorization'];
-        return request;
+      sign: (requestToSign) => {
+        logRequestInfo(event, 'S3 Signing Request', {
+          url: requestToSign.protocol + '//' + requestToSign.hostname + requestToSign.path,
+          method: requestToSign.method,
+          headers: Object.keys(requestToSign.headers).reduce((acc, key) => {
+            // Don't log sensitive headers
+            if (key.toLowerCase() === 'authorization') {
+              acc[key] = '***REDACTED***';
+            } else {
+              acc[key] = requestToSign.headers[key];
+            }
+            return acc;
+          }, {} as Record<string, any>)
+        });
+        return Promise.resolve(requestToSign);
       }
     },
-    // Set the endpoint to the public S3 endpoint
-    endpoint: `https://s3.${s3Config.region}.amazonaws.com`
+  });
+  
+  logRequestInfo(event, 'S3 Client Initialized', {
+    region: s3Config.region,
+    bucketName: s3Config.bucketName,
+    hasCdn: !!s3Config.cdnUrl
   });
 
   try {
+    // Log incoming request
+    logRequestInfo(event, 'Request received', {
+      url: event.node.req.url,
+      headers: event.node.req.headers,
+      query: event.node.req.url?.split('?')[1] || 'none'
+    });
+    
     // Get query parameters
     const query = getQuery(event);
     const folder = query.folder?.toString() || '';
@@ -45,34 +75,72 @@ export default defineEventHandler(async (event) => {
     const perPage = Math.min(100, Math.max(1, parseInt(query.perPage?.toString() || '10')));
     const prefix = folder.endsWith('/') ? folder : `${folder}/`;
     
+    logRequestInfo(event, 'Query parameters processed', {
+      folder,
+      page,
+      perPage,
+      prefix
+    });
+    
     // First, list all objects to get the total count
     const listParams = {
       Bucket: s3Config.bucketName,
       Prefix: prefix,
-      Delimiter: '/'
+      Delimiter: '/',
+      MaxKeys: 1000
     };
+    
+    logRequestInfo(event, 'S3 ListObjectsV2 params', listParams);
 
     // Get all objects (we need to do this to properly paginate as S3 doesn't support offset pagination natively)
     let allObjects: any[] = [];
     let isTruncated = true;
     let nextContinuationToken: string | undefined;
+    let requestCount = 0;
 
     while (isTruncated) {
-      const response = await s3Client.send(new ListObjectsV2Command({
-        ...listParams,
-        ContinuationToken: nextContinuationToken
-      }));
+      requestCount++;
+      let response;
+      try {
+        logRequestInfo(event, `S3 Request #${requestCount}`, {
+          continuationToken: !!nextContinuationToken ? 'present' : 'none'
+        });
+        
+        response = await s3Client.send(new ListObjectsV2Command({
+          ...listParams,
+          ContinuationToken: nextContinuationToken
+        }));
+        
+        logRequestInfo(event, `S3 Response #${requestCount}`, {
+          keyCount: response.KeyCount,
+          isTruncated: response.IsTruncated,
+          objectCount: response.Contents?.length || 0
+        });
 
-      if (response.Contents) {
-        allObjects = [...allObjects, ...response.Contents];
+        if (response.Contents) {
+          allObjects = [...allObjects, ...response.Contents];
+        }
+
+        isTruncated = response.IsTruncated || false;
+        nextContinuationToken = response.NextContinuationToken;
+      } catch (error: any) {
+        logRequestInfo(event, 'S3 Request Failed', {
+          error: error.message,
+          code: error.code,
+          requestId: error.$metadata?.requestId,
+          attempt: requestCount
+        });
+        throw error;
       }
-
-      isTruncated = response.IsTruncated || false;
-      nextContinuationToken = response.NextContinuationToken;
     }
 
+    logRequestInfo(event, 'S3 List Complete', {
+      totalObjects: allObjects.length,
+      requestCount
+    });
+
     // Filter and sort all images
-const allImages = allObjects
+    const allImages = allObjects
   .filter((file) => {
     if (!file.Key) return false;
     const extension = file.Key.split('.').pop()?.toLowerCase() || '';
@@ -97,24 +165,22 @@ const allImages = allObjects
     const startIndex = (currentPage - 1) * perPage;
     const endIndex = Math.min(startIndex + perPage, totalItems);
     const paginatedItems = allImages.slice(startIndex, endIndex);
+    
+    logRequestInfo(event, 'Pagination Complete', {
+      totalItems,
+      totalPages,
+      currentPage,
+      itemsPerPage: perPage,
+      startIndex,
+      endIndex,
+      itemsInPage: paginatedItems.length
+    });
 
     // Format the response
     const images = paginatedItems.map((file) => {
-      // Use CDN URL if configured, otherwise construct the public S3 URL
-      let imageUrl;
-      if (s3Config.cdnUrl) {
-        // Ensure there are no double slashes in the URL
-        const baseUrl = s3Config.cdnUrl.endsWith('/') 
-          ? s3Config.cdnUrl.slice(0, -1) 
-          : s3Config.cdnUrl;
-        const key = file.Key.startsWith('/') ? file.Key.slice(1) : file.Key;
-        imageUrl = `${baseUrl}/${key}`;
-      } else {
-        // Construct direct S3 public URL
-        imageUrl = `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${
-          file.Key.startsWith('/') ? file.Key.slice(1) : file.Key
-        }`;
-      }
+      const imageUrl = s3Config.cdnUrl 
+        ? `${s3Config.cdnUrl}/${file.Key}`
+        : `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${file.Key}`;
       
       return {
         key: file.Key,
@@ -124,24 +190,37 @@ const allImages = allObjects
       };
     });
     
-    return {
+    const response = {
       statusCode: 200,
       body: images,
       meta: {
         currentPage,
-        perPage,
-        totalItems,
         totalPages,
-        hasNextPage: currentPage < totalPages,
-        hasPreviousPage: currentPage > 1
+        totalItems,
+        perPage
       }
     };
-  } catch (error: any) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
-    throw createError({
+    logRequestInfo(event, 'Sending Response', {
+      statusCode: 200,
+      itemCount: images.length
+    });
+    
+    return response;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    logRequestInfo(event, 'Error processing request', {
+      error: errorMessage,
+      stack: errorStack,
+      statusCode: 500
+    });
+    
+    return createError({
       statusCode: 500,
-      statusMessage: `Failed to fetch images from S3: ${errorMessage}`,
+      statusMessage: 'Failed to fetch images from S3',
+      data: errorMessage
     });
   }
 });
