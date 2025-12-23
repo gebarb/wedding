@@ -12,7 +12,7 @@
           @click="openModal(image)"
         >
           <div class="aspect-w-1 aspect-h-1 w-full">
-            <NuxtImg
+            <img
               v-if="image.loaded"
               :src="image.src"
               :alt="image.alt"
@@ -51,11 +51,12 @@
       <!-- Modal for full-size image -->
       <div 
         v-if="isModalOpen" 
-        class="gallery-modal-overlay" 
+        class="gallery-modal-overlay"
+        :class="{ 'visible': isModalOpen }"
         @click.self="closeModal"
         @click.stop
       >
-        <div class="gallery-modal" @click.stop>
+        <div class="gallery-modal" :class="{ 'visible': isModalOpen }" @click.stop>
           <button 
             class="close-button" 
             @click="closeModal"
@@ -64,11 +65,20 @@
             <font-awesome-icon icon="fa-solid fa-x" />
           </button>
           <div v-if="selectedImage" class="gallery-modal-content">
-            <NuxtImg 
+            <transition name="fade">
+              <div v-if="showLoading" class="image-loading">
+                <div class="spinner"></div>
+                <span>Loading image...</span>
+              </div>
+            </transition>
+            <img 
+              :key="selectedImage.src"
               :src="selectedImage.src" 
-              :alt="selectedImage.alt" 
-              loading="eager"
+              :alt="selectedImage.alt"
               class="gallery-modal-image"
+              :class="{ 'opacity-0': !isImageLoaded }"
+              loading="eager"
+              decoding="async"
               format="webp"
               quality="85"
               :modifiers="{
@@ -76,7 +86,7 @@
                 ...(imageDimensions?.value || { width: 800, height: 600 })
               }"
               :sizes="'90vw'"
-              :preload="true"
+              @load="handleImageLoad"
             />
           </div>
         </div>
@@ -107,12 +117,7 @@ const updateDimensions = () => {
   }
 };
 
-// Cleanup
-onBeforeUnmount(() => {
-  if (process.client) {
-    window.removeEventListener('resize', updateDimensions);
-  }
-});
+// Moved cleanup to onBeforeUnmount
 const isLoading = ref(true);
 const isFetching = ref(false);
 const hasMore = ref(true);
@@ -284,59 +289,153 @@ const gridTemplateColumns = computed(() => {
 
 const selectedImage = ref<{ src: string; alt: string } | null>(null);
 const isModalOpen = ref(false);
+const isImageLoaded = ref(false);
+const showLoading = ref(false);
+const imageCache = ref<Record<string, HTMLImageElement>>({});
+const CACHE_SIZE_LIMIT = 20; // Limit cache size to prevent memory issues
+let loadStartTime = 0;
+const MIN_LOADING_TIME = 300; // Minimum time to show loading indicator in ms
 
 // Modal functions
+function cleanupCache() {
+  const cache = imageCache.value;
+  const keys = Object.keys(cache);
+  
+  // If cache exceeds limit, remove the oldest entries
+  if (keys.length > CACHE_SIZE_LIMIT) {
+    const toRemove = keys.length - CACHE_SIZE_LIMIT;
+    for (let i = 0; i < toRemove; i++) {
+      const key = keys[i];
+      if (cache[key]?.src) {
+        URL.revokeObjectURL(cache[key].src);
+      }
+      delete cache[key];
+    }
+  }
+}
+
 function openModal(image: { src: string; alt: string }) {
+  // Set selected image and open modal immediately
   selectedImage.value = image;
   isModalOpen.value = true;
+  isImageLoaded.value = false;
+  showLoading.value = true;
+  loadStartTime = Date.now();
+  
+  // Clean up cache before adding new images
+  cleanupCache();
+  
+  // Check if image is already in cache
+  if (imageCache.value[image.src]) {
+    const img = imageCache.value[image.src];
+    if (img.complete) {
+      handleImageLoad();
+    } else {
+      img.onload = handleImageLoad;
+      img.onerror = () => {
+        console.error('Failed to load cached image:', image.src);
+        isImageLoaded.value = true;
+        showLoading.value = false;
+      };
+    }
+  } else {
+    // Preload the image
+    const img = new Image();
+    img.src = image.src;
+    img.onload = () => {
+      // Only cache if we're still on the same image
+      if (selectedImage.value?.src === image.src) {
+        imageCache.value[image.src] = img;
+        handleImageLoad();
+      }
+    };
+    
+    // Handle image loading errors
+    img.onerror = () => {
+      console.error('Failed to load image:', image.src);
+      isImageLoaded.value = true;
+      showLoading.value = false;
+    };
+  }
+  
   if (process.client) {
     document.body.style.overflow = 'hidden';
   }
 }
 
+function handleImageLoad() {
+  const loadTime = Date.now() - loadStartTime;
+  const remainingTime = Math.max(0, MIN_LOADING_TIME - loadTime);
+  
+  setTimeout(() => {
+    isImageLoaded.value = true;
+    // Keep loading indicator for a bit after image is loaded for better UX
+    setTimeout(() => {
+      showLoading.value = false;
+    }, 200);
+  }, remainingTime);
+}
+
 function closeModal() {
+  // Only reset the modal state, keep the cache
   isModalOpen.value = false;
   if (process.client) {
     document.body.style.overflow = '';
   }
+  // Don't clear the selected image immediately to allow for smooth transitions
+  setTimeout(() => {
+    selectedImage.value = null;
+    isImageLoaded.value = false;
+  }, 300); // Match this with your CSS transition duration
 }
 
 // Lifecycle hooks
-onMounted(() => {
-  if (process.client) {
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    
-    // Small delay to ensure DOM is fully rendered
-    nextTick(() => {
-      setupObserver();
-      fetchImages().then(() => {
-        // Re-setup observer after initial load to ensure it's observing the correct element
-        nextTick(setupObserver);
-      });
-    });
-    
-    // Update screen width on resize
-    window.addEventListener('resize', updateScreenWidth);
-    
-    // Close modal on escape key
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
-    };
-    
-    window.addEventListener('keydown', handleEscape);
-    
-    // Cleanup
-    onUnmounted(() => {
-      window.removeEventListener('resize', updateScreenWidth);
-      window.removeEventListener('keydown', handleEscape);
-      if (observer.value) {
-        observer.value.disconnect();
-      }
-    });
+const handleResize = debounce(updateDimensions, 100);
+const handleScreenResize = debounce(updateScreenWidth, 100);
+
+const handleEscape = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    closeModal();
   }
+};
+
+onMounted(() => {
+  if (!process.client) return;
+  
+  updateDimensions();
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('resize', handleScreenResize);
+  window.addEventListener('keydown', handleEscape);
+  
+  // Small delay to ensure DOM is fully rendered
+  nextTick(() => {
+    setupObserver();
+    fetchImages().then(() => {
+      nextTick(setupObserver);
+    });
+  });
+});
+
+// Proper cleanup
+onBeforeUnmount(() => {
+  if (!process.client) return;
+  
+  window.removeEventListener('resize', handleResize);
+  window.removeEventListener('resize', handleScreenResize);
+  window.removeEventListener('keydown', handleEscape);
+  
+  if (observer.value) {
+    observer.value.disconnect();
+    observer.value = null;
+  }
+  
+  // Clear image cache to free up memory
+  Object.values(imageCache.value).forEach(img => {
+    if (img && img.src) {
+      URL.revokeObjectURL(img.src);
+    }
+  });
+  imageCache.value = {};
 });
 </script>
 

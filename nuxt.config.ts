@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       charset: "utf-8",
+      link: [
+        { rel: "preconnect", href: "https://ebarb-wedding.s3.us-east-2.amazonaws.com" }
+      ],
       viewport: "width=device-width, initial-scale=1",
     },
     layoutTransition: { name: "layout", mode: "out-in" },
@@ -21,10 +24,10 @@ export default defineNuxtConfig({
     "@fortawesome/fontawesome-svg-core/styles.css",
   ],
   devtools: { enabled: true },
-  modules: ['@nuxt/image'],
+  modules: ["@nuxt/image"],
   image: {
-    // Use IPX as a fallback provider
-    provider: 'ipx',
+    // Use IPX as the provider
+    provider: "ipx",
     // Configure responsive image breakpoints
     screens: {
       xs: 320,
@@ -36,7 +39,14 @@ export default defineNuxtConfig({
     },
     // Allow images from your S3 domain
     domains: [
-      // "ebarb-wedding.s3.us-east-2.amazonaws.com"
-    ]
+      "ebarb-wedding.s3.us-east-2.amazonaws.com"
+    ],
+    // Default format and quality
+    format: ["webp"],
+    quality: 80,
+    // IPX configuration
+    ipx: {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+    }
   }
 });
