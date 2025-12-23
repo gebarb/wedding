@@ -19,10 +19,8 @@ export default defineEventHandler(async (event) => {
   // Initialize S3 client for public bucket
   const s3Client = new S3Client({
     region: s3Config.region,
-    credentials: undefined, // For public bucket
-    signer: {
-      sign: (requestToSign) => Promise.resolve(requestToSign)
-    }
+    credentials: { accessKeyId: "", secretAccessKey: "" },
+    signer: { sign: async req => req },
   });
 
   try {
