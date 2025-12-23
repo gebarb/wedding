@@ -1,5 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
     head: {
@@ -23,17 +22,6 @@ export default defineNuxtConfig({
   ],
   devtools: { enabled: true },
   modules: ['@nuxt/image'],
-  
-  // Ensure server routes are properly handled
-  nitro: {
-    preset: 'node-server',
-    serveStatic: true,
-  },
-  
-  // Explicitly define server routes
-  routeRules: {
-    '/api/**': { cors: true, headers: { 'access-control-allow-methods': 'GET' } },
-  },
   image: {
     // Use IPX as a fallback provider
     provider: 'ipx',
