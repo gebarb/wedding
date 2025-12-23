@@ -10,7 +10,11 @@
     <NuxtPage />
     <Footer @open-modal="toggleModal"></Footer>
   </NuxtLayout>
-  <RegistryModal v-show="showModal" @close-modal="toggleModal" />
+    <RegistryModal 
+      v-if="showModal" 
+      :is-open="showModal" 
+      @close-modal="toggleModal" 
+    />
 </template>
 
 <script setup lang="ts">

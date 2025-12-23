@@ -29,8 +29,31 @@
 
 .close {
   position: absolute;
-  right: 0;
-  top: 0;
-  margin: 8px 12px 0 0;
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid rgba(165, 42, 42, 0.2);
+  border-radius: 50%;
   cursor: pointer;
+  color: brown;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.close:hover {
+  background: #fff5f5;
+  transform: scale(1.1);
+  border-color: rgba(165, 42, 42, 0.3);
+}
+
+.close:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(165, 42, 42, 0.3);
 }

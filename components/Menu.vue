@@ -6,6 +6,7 @@
         <div class="navbar-menu collapse" :class="{ 'show': isMobileMenuOpen }">
             <div class="navbar-nav">
                 <NuxtLink class="nav-link" to="/">Home</NuxtLink>
+                <NuxtLink class="nav-link" to="/gallery">Gallery</NuxtLink>
                 <NuxtLink class="nav-link" to="/faq">FAQ</NuxtLink>
                 <NuxtLink class="nav-link" @click="$emit('open-modal')">Registry</NuxtLink>
                 <NuxtLink class="nav-link" @click="navigate('/faq')" :to="theKnotUrl" target="_blank">RSVP</NuxtLink>
