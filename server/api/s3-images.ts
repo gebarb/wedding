@@ -19,14 +19,22 @@ export default defineEventHandler(async (event) => {
   // Initialize S3 client for public bucket
   const s3Client = new S3Client({
     region: s3Config.region,
-    // No credentials needed for public read access
+    // For public bucket, we need to explicitly set credentials to undefined
+    // and use a custom signer that doesn't require credentials
     credentials: undefined,
-    // Disable signing for public bucket
+    // Use path style for better compatibility
+    forcePathStyle: true,
+    // Custom signer that bypasses the default signing process
     signer: {
-      sign: (requestToSign) => Promise.resolve(requestToSign)
+      sign: async (request) => {
+        // Remove any Authorization header that might be added automatically
+        delete request.headers['authorization'];
+        delete request.headers['Authorization'];
+        return request;
+      }
     },
-    // Force path style for public buckets (if needed)
-    forcePathStyle: true
+    // Set the endpoint to the public S3 endpoint
+    endpoint: `https://s3.${s3Config.region}.amazonaws.com`
   });
 
   try {
@@ -92,17 +100,25 @@ const allImages = allObjects
 
     // Format the response
     const images = paginatedItems.map((file) => {
-      // Use CDN URL if configured, otherwise use direct S3 public URL
-      const imageUrl = s3Config.cdnUrl 
-        ? `${s3Config.cdnUrl}/${file.Key}`
-        : `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${file.Key}`;
-      
-      // Ensure the URL is properly encoded
-      const encodedUrl = imageUrl.split('/').map(encodeURIComponent).join('/');
+      // Use CDN URL if configured, otherwise construct the public S3 URL
+      let imageUrl;
+      if (s3Config.cdnUrl) {
+        // Ensure there are no double slashes in the URL
+        const baseUrl = s3Config.cdnUrl.endsWith('/') 
+          ? s3Config.cdnUrl.slice(0, -1) 
+          : s3Config.cdnUrl;
+        const key = file.Key.startsWith('/') ? file.Key.slice(1) : file.Key;
+        imageUrl = `${baseUrl}/${key}`;
+      } else {
+        // Construct direct S3 public URL
+        imageUrl = `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${
+          file.Key.startsWith('/') ? file.Key.slice(1) : file.Key
+        }`;
+      }
       
       return {
         key: file.Key,
-        url: encodedUrl,
+        url: imageUrl,
         lastModified: file.LastModified,
         size: file.Size,
       };
