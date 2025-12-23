@@ -1,9 +1,118 @@
+<template>
+  <ClientOnly>
+    <div class="gallery-container">
+      <div 
+        class="gallery-grid" 
+        :style="{ '--columns': columns, '--gap': '1rem' }"
+      >
+        <div
+          v-for="(image, index) in images"
+          :key="image.key || index"
+          class="gallery-item"
+          @click="openModal(image)"
+        >
+          <div class="aspect-w-1 aspect-h-1 w-full">
+            <NuxtImg
+              v-if="image.loaded"
+              :src="image.src"
+              :alt="image.alt"
+              loading="lazy"
+              class="gallery-image"
+              format="webp"
+              quality="65"
+              :modifiers="{ 
+                fit: 'cover', 
+                gravity: 'center',
+                width: isMobile ? 400 : 800,
+                height: isMobile ? 400 : 800
+              }"
+              :sizes="isMobile ? '100vw' : '33vw'"
+              @load="image.loaded = true"
+            />
+            <div v-else class="image-placeholder"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading indicator and sentinel -->
+      <div v-if="isFetching" class="loading-indicator">
+        <div class="spinner"></div>
+        <span>Loading more photos...</span>
+      </div>
+      
+      <!-- End of results message -->
+      <div v-else-if="!hasMore && images.length > 0" class="end-of-results">
+        <span>All photos loaded</span>
+      </div>
+      
+      <!-- Intersection observer target -->
+      <div ref="sentinel" class="h-1 w-full"></div>
+
+      <!-- Modal for full-size image -->
+      <div 
+        v-if="isModalOpen" 
+        class="gallery-modal-overlay" 
+        @click.self="closeModal"
+        @click.stop
+      >
+        <div class="gallery-modal" @click.stop>
+          <button 
+            class="close-button" 
+            @click="closeModal"
+            aria-label="Close modal"
+          >
+            <font-awesome-icon icon="fa-solid fa-x" />
+          </button>
+          <div v-if="selectedImage" class="gallery-modal-content">
+            <NuxtImg 
+              :src="selectedImage.src" 
+              :alt="selectedImage.alt" 
+              loading="eager"
+              class="gallery-modal-image"
+              format="webp"
+              quality="85"
+              :modifiers="{
+                fit: 'contain',
+                ...(imageDimensions?.value || { width: 800, height: 600 })
+              }"
+              :sizes="'90vw'"
+              :preload="true"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </ClientOnly>
+</template>
+
 <script setup lang="ts">
 const { $img } = useNuxtApp();
 const config = useRuntimeConfig();
 
 // State for images and loading
-const images = ref<Array<{src: string, alt: string, key: string}>>([]);
+const images = ref<Array<{src: string, alt: string, key: string, loaded: boolean}>>([]);
+
+// Image dimensions for modal
+const imageDimensions = ref<{width: number, height: number} | null>(null);
+
+// Update image dimensions
+const updateDimensions = () => {
+  if (process.client) {
+    imageDimensions.value = {
+      width: Math.min(window.innerWidth * 0.9, 1200),
+      height: Math.min(window.innerHeight * 0.9, 800)
+    };
+  } else {
+    imageDimensions.value = { width: 800, height: 600 };
+  }
+};
+
+// Cleanup
+onBeforeUnmount(() => {
+  if (process.client) {
+    window.removeEventListener('resize', updateDimensions);
+  }
+});
 const isLoading = ref(true);
 const isFetching = ref(false);
 const hasMore = ref(true);
@@ -11,11 +120,21 @@ const error = ref<string | null>(null);
 const retryCount = ref(0);
 const MAX_RETRIES = 3;
 const page = ref(1);
-// Responsive settings
-const screenWidth = ref(0);
+
+// Responsive settings with client-side only initialization
+const screenWidth = ref(process.client ? window.innerWidth : 0);
 const isMobile = computed(() => screenWidth.value < 768);
 const columns = computed(() => isMobile.value ? 1 : 3);
-const perPage = computed(() => 6); // Initial load count
+const perPage = computed(() => isMobile.value ? 4 : 6); // Smaller batch for mobile
+
+// Debounce utility
+const debounce = (fn: Function, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function(this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+  };
+};
 
 // Fetch images from S3 with infinite scroll
 const fetchImages = async (retryAttempt = 0) => {
@@ -54,12 +173,16 @@ const fetchImages = async (retryAttempt = 0) => {
     // The API returns { statusCode: number, body: Image[], meta: { hasNextPage, ... } }
     const responseItems = Array.isArray(responseData.body) ? responseData.body : [];
     
-    // Process new batch of images
+    // Process new batch of images with lazy loading
     const newImages = responseItems.map((item: any) => ({
       src: item.url || item.Key,
       alt: item.key?.split('/').pop() || 'Wedding photo',
-      key: item.ETag || item.key || Math.random().toString()
+      key: item.ETag || item.key || Math.random().toString(),
+      loaded: false
     }));
+    
+    // Mark first few images as loaded immediately
+    newImages.slice(0, perPage.value).forEach(img => { img.loaded = true; });
     
     // Append new images to existing ones
     images.value = [...images.value, ...newImages];
@@ -81,13 +204,11 @@ const fetchImages = async (retryAttempt = 0) => {
     
     retryCount.value = 0; // Reset retry count on success
   } catch (err: any) {
-    console.error('Error fetching images:', err);
     error.value = err.message || 'Failed to load images';
     
     // Retry logic
     if (retryAttempt < MAX_RETRIES) {
       const delay = Math.pow(2, retryAttempt) * 1000; // Exponential backoff
-      console.log(`Retrying in ${delay}ms...`);
       setTimeout(() => fetchImages(retryAttempt + 1), delay);
       return;
     }
@@ -99,33 +220,62 @@ const fetchImages = async (retryAttempt = 0) => {
   }
 };
 
-// Handle scroll events for infinite loading
-const handleScroll = () => {
-  if (isLoading.value || isFetching.value || !hasMore.value) return;
+// Intersection Observer for infinite scroll
+const observer = ref<IntersectionObserver | null>(null);
+const sentinel = ref<HTMLElement | null>(null);
+
+// Debounced scroll handler
+const handleScroll = debounce(() => {
+  if (isLoading.value || isFetching.value || !hasMore.value || !sentinel.value) return;
   
-  const scrollY = window.scrollY;
-  const windowHeight = window.innerHeight;
-  const documentHeight = document.documentElement.scrollHeight;
-  const scrollThreshold = 200; // pixels from bottom to trigger load
+  const sentinelRect = sentinel.value.getBoundingClientRect();
+  const isInViewport = (
+    sentinelRect.top <= (window.innerHeight || document.documentElement.clientHeight) + 500
+  );
   
-  if (scrollY + windowHeight >= documentHeight - scrollThreshold) {
+  if (isInViewport) {
     fetchImages();
   }
-};
+}, 200);
 
-// Screen size detection and update
-const updateScreenWidth = () => {
-  screenWidth.value = window.innerWidth;
-};
+// Update screen width with debounce
+const updateScreenWidth = debounce(() => {
+  if (process.client) {
+    screenWidth.value = window.innerWidth;
+  }
+}, 150);
 
-// Handle window resize
-onMounted(() => {
-  updateScreenWidth();
-  window.addEventListener('resize', updateScreenWidth);
-  onUnmounted(() => {
-    window.removeEventListener('resize', updateScreenWidth);
-  });
-});
+// Setup intersection observer
+const setupObserver = () => {
+  if (process.client) {
+    // Make sure we have the sentinel element
+    sentinel.value = document.querySelector('.gallery-container')?.lastElementChild as HTMLElement;
+    
+    if (sentinel.value) {
+      // Disconnect any existing observer
+      if (observer.value) {
+        observer.value.disconnect();
+      }
+
+      observer.value = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && !isFetching.value && hasMore.value) {
+              fetchImages().catch(() => {});
+            }
+          });
+        },
+        {
+          root: null,
+          rootMargin: '200px 0px',
+          threshold: 0.01
+        }
+      );
+
+      observer.value.observe(sentinel.value);
+    }
+  }
+};
 
 // Responsive grid layout
 const gridTemplateColumns = computed(() => {
@@ -135,114 +285,60 @@ const gridTemplateColumns = computed(() => {
 const selectedImage = ref<{ src: string; alt: string } | null>(null);
 const isModalOpen = ref(false);
 
-// Initial fetch when component mounts
-onMounted(async () => {
-  await nextTick(); // Wait for the DOM to be ready
-  await fetchImages();
-  window.addEventListener('scroll', handleScroll);
-  window.addEventListener('resize', updateScreenWidth);
-});
-
-// Clean up event listeners
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll);
-  window.removeEventListener('resize', updateScreenWidth);
-});
-
+// Modal functions
 function openModal(image: { src: string; alt: string }) {
   selectedImage.value = image;
   isModalOpen.value = true;
-  document.body.style.overflow = 'hidden';
+  if (process.client) {
+    document.body.style.overflow = 'hidden';
+  }
 }
 
 function closeModal() {
   isModalOpen.value = false;
-  document.body.style.overflow = '';
+  if (process.client) {
+    document.body.style.overflow = '';
+  }
 }
 
-// Close modal on escape key
+// Lifecycle hooks
 onMounted(() => {
-  const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      closeModal();
-    }
-  };
-  window.addEventListener('keydown', handleEscape);
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleEscape);
-  });
+  if (process.client) {
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    
+    // Small delay to ensure DOM is fully rendered
+    nextTick(() => {
+      setupObserver();
+      fetchImages().then(() => {
+        // Re-setup observer after initial load to ensure it's observing the correct element
+        nextTick(setupObserver);
+      });
+    });
+    
+    // Update screen width on resize
+    window.addEventListener('resize', updateScreenWidth);
+    
+    // Close modal on escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    };
+    
+    window.addEventListener('keydown', handleEscape);
+    
+    // Cleanup
+    onUnmounted(() => {
+      window.removeEventListener('resize', updateScreenWidth);
+      window.removeEventListener('keydown', handleEscape);
+      if (observer.value) {
+        observer.value.disconnect();
+      }
+    });
+  }
 });
 </script>
-
-<template>
-  <div class="gallery-container">
-    <div 
-      class="gallery-grid" 
-      :style="{ '--columns': columns, '--gap': '1rem' }"
-    >
-      <div
-        v-for="(image, index) in images"
-        :key="image.key || index"
-        class="gallery-item"
-        @click="openModal(image)"
-      >
-        <div class="aspect-w-1 aspect-h-1 w-full">
-          <NuxtImg
-            :src="image.src"
-            :alt="image.alt"
-            loading="lazy"
-            class="gallery-image"
-            format="webp"
-            quality="80"
-            :modifiers="{ fit: 'cover', gravity: 'center' }"
-            sizes="sm:100vw md:50vw lg:33vw"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading indicator -->
-    <div v-if="isFetching" class="loading-indicator">
-      <div class="spinner"></div>
-      <span>Loading more photos...</span>
-    </div>
-    
-    <!-- End of results message -->
-    <div v-else-if="!hasMore && images.length > 0" class="end-of-results">
-      <span>All photos loaded</span>
-    </div>
-
-    <!-- Modal for full-size image -->
-    <div 
-      v-if="isModalOpen" 
-      class="gallery-modal-overlay" 
-      @click.self="closeModal"
-      @click.stop
-    >
-      <div class="gallery-modal" @click.stop>
-        <button 
-          class="close-button" 
-          @click="closeModal"
-          aria-label="Close modal"
-        >
-          <font-awesome-icon icon="fa-solid fa-x" />
-        </button>
-        <div v-if="selectedImage" class="gallery-modal-content">
-          <NuxtImg 
-            :src="selectedImage.src" 
-            :alt="selectedImage.alt" 
-            loading="eager"
-            class="gallery-modal-image"
-            format="webp"
-            quality="90"
-            :modifiers="{ fit: 'contain' }"
-            :sizes="'90vw'"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style>
 @import url("~/assets/css/photo-gallery.css");
