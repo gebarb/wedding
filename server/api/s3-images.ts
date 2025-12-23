@@ -19,10 +19,14 @@ export default defineEventHandler(async (event) => {
   // Initialize S3 client for public bucket
   const s3Client = new S3Client({
     region: s3Config.region,
-    credentials: undefined, // For public bucket
+    // No credentials needed for public read access
+    credentials: undefined,
+    // Disable signing for public bucket
     signer: {
       sign: (requestToSign) => Promise.resolve(requestToSign)
-    }
+    },
+    // Force path style for public buckets (if needed)
+    forcePathStyle: true
   });
 
   try {
@@ -88,13 +92,17 @@ const allImages = allObjects
 
     // Format the response
     const images = paginatedItems.map((file) => {
+      // Use CDN URL if configured, otherwise use direct S3 public URL
       const imageUrl = s3Config.cdnUrl 
         ? `${s3Config.cdnUrl}/${file.Key}`
         : `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${file.Key}`;
       
+      // Ensure the URL is properly encoded
+      const encodedUrl = imageUrl.split('/').map(encodeURIComponent).join('/');
+      
       return {
         key: file.Key,
-        url: imageUrl,
+        url: encodedUrl,
         lastModified: file.LastModified,
         size: file.Size,
       };
