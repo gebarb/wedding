@@ -15,6 +15,19 @@
             {{ category }}
           </button>
         </div>
+        
+        <!-- Subcategories -->
+        <div v-if="showSubcategories" class="gallery-subcategories">
+          <button
+            v-for="subcategory in categorySubcategories[selectedCategory!]"
+            :key="subcategory"
+            @click="selectedSubcategory = subcategory"
+            class="gallery-subcategory"
+            :class="{'active': selectedSubcategory === subcategory}"
+          >
+            {{ subcategory }}
+          </button>
+        </div>
       </div>
       
       <div 
@@ -121,10 +134,23 @@ const currentPage = ref(1);
 const totalPages = ref(1);
 const isLoading = ref(true);
 
-// Category state
-const categories = ['Proposal', 'Wedding', 'Honeymoon'] as const;
-type Category = typeof categories[number];
+// Category and Subcategory types
+type Category = 'Proposal' | 'Wedding' /*| 'Honeymoon'*/;
+
+// Subcategory configuration
+const categorySubcategories: Record<Category, string[] | null> = {
+  'Proposal': null, // No subcategories for Proposal
+  'Wedding': ['Ceremony', 'Reception', 'Dancing', 'Exit', 'Details', 'Bridal Party', 'First Look', 'Family', 'Portraits'],
+  // 'Honeymoon': ['Positano', 'Rome', 'Florence']
+};
+
+// State
+const categories = Object.keys(categorySubcategories) as Category[];
 const selectedCategory = ref<Category | null>(null);
+const selectedSubcategory = ref<string | null>(null);
+const showSubcategories = computed(() => 
+  selectedCategory.value && categorySubcategories[selectedCategory.value] !== null
+);
 
 // Modal state
 const isModalOpen = ref(false);
@@ -139,6 +165,13 @@ const isMobile = computed(() => screenWidth.value < 768);
 const columns = computed(() => isMobile.value ? 2 : 3);
 const perPage = computed(() => isMobile.value ? 4 : 6);
 
+// Build the folder path based on selected category and subcategory
+const getFolderPath = (category: Category, subcategory: string | null): string => {
+  return subcategory 
+    ? `${category.toLowerCase()}/${subcategory.replaceAll(' ', '-').toLowerCase()}`
+    : category.toLowerCase();
+};
+
 // Fetch images with pagination
 const fetchImages = async () => {
   isLoading.value = true;
@@ -150,11 +183,19 @@ const fetchImages = async () => {
     return;
   }
   
+  // If category has subcategories but none is selected, don't fetch yet
+  if (showSubcategories.value && !selectedSubcategory.value) {
+    images.value = [];
+    totalPages.value = 0;
+    isLoading.value = false;
+    return;
+  }
+  
   try {
     const response = await $fetch('/api/s3-images', {
       method: 'GET',
       query: { 
-        folder: selectedCategory.value.toLowerCase(),
+        folder: getFolderPath(selectedCategory.value, selectedSubcategory.value),
         page: currentPage.value,
         perPage: perPage.value
       },
@@ -265,10 +306,27 @@ const debounce = <F extends (...args: any[]) => void>(fn: F, delay: number) => {
 };
 
 // Watch for category changes
-watch(selectedCategory, () => {
-  // Reset to first page when category changes
+watch(selectedCategory, (newCategory) => {
+  // Reset subcategory when category changes
+  selectedSubcategory.value = null;
+  // Reset to first page
   currentPage.value = 1;
-  fetchImages();
+  
+  // Only fetch if the category doesn't have subcategories
+  if (newCategory && !categorySubcategories[newCategory]) {
+    fetchImages();
+  } else {
+    images.value = [];
+    totalPages.value = 0;
+  }
+});
+
+// Watch for subcategory changes
+watch(selectedSubcategory, () => {
+  if (selectedCategory.value) {
+    currentPage.value = 1;
+    fetchImages();
+  }
 });
 
 // Update screen width with debounce

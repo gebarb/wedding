@@ -86,9 +86,11 @@ const allImages = allObjects
 
     // Format the response
     const images = paginatedItems.map((file) => {
+      // Encode each part of the key separately to handle special characters
+      const encodedKey = file.Key.split('/').map(encodeURIComponent).join('/');
       const imageUrl = s3Config.cdnUrl 
-        ? `${s3Config.cdnUrl}/${file.Key}`
-        : `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${file.Key}`;
+        ? `${s3Config.cdnUrl}/${encodedKey}`
+        : `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${encodedKey}`;
       
       return {
         key: file.Key,
