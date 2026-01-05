@@ -1,6 +1,22 @@
 <template>
   <ClientOnly>
     <div class="gallery-container">
+      <!-- Gallery Header and Category Selector -->
+      <div class="gallery-header">
+        <h1 class="gallery-title">Our Gallery</h1>
+        <div class="gallery-categories">
+          <button
+            v-for="category in categories"
+            :key="category"
+            @click="selectedCategory = category"
+            class="gallery-category"
+            :class="{'active': selectedCategory === category}"
+          >
+            {{ category }}
+          </button>
+        </div>
+      </div>
+      
       <div 
         class="gallery-grid" 
         :style="{ '--columns': columns, '--gap': '1rem' }"
@@ -97,13 +113,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 
 // State for images and pagination
 const images = ref<Array<{src: string, alt: string, key: string, loaded: boolean}>>([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const isLoading = ref(true);
+
+// Category state
+const categories = ['Proposal', 'Wedding', 'Honeymoon'] as const;
+type Category = typeof categories[number];
+const selectedCategory = ref<Category | null>(null);
 
 // Modal state
 const isModalOpen = ref(false);
@@ -122,11 +143,18 @@ const perPage = computed(() => isMobile.value ? 4 : 6);
 const fetchImages = async () => {
   isLoading.value = true;
   
+  if (!selectedCategory.value) {
+    images.value = [];
+    totalPages.value = 0;
+    isLoading.value = false;
+    return;
+  }
+  
   try {
     const response = await $fetch('/api/s3-images', {
       method: 'GET',
       query: { 
-        folder: 'proposal',
+        folder: selectedCategory.value.toLowerCase(),
         page: currentPage.value,
         perPage: perPage.value
       },
@@ -235,6 +263,13 @@ const debounce = <F extends (...args: any[]) => void>(fn: F, delay: number) => {
     timeoutId = setTimeout(() => fn.apply(this, args), delay);
   };
 };
+
+// Watch for category changes
+watch(selectedCategory, () => {
+  // Reset to first page when category changes
+  currentPage.value = 1;
+  fetchImages();
+});
 
 // Update screen width with debounce
 const updateScreenWidth = debounce(() => {
