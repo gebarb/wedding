@@ -1,11 +1,4 @@
 <script setup lang="ts">
-const title = ref("Gallery");
-
-useHead({
-    meta: [{ property: 'og:title', content: `Ebarb Wedding - ${title}` }],
-    title: title
-});
-
 definePageMeta({
     layout: "gallery"
 });
