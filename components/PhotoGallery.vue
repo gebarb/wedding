@@ -124,7 +124,7 @@ const screenWidth = ref(process.client ? window.innerWidth : 0);
 const isMobile = computed(() => screenWidth.value < 768);
 
 const columns = computed(() => isMobile.value ? 2 : 3);
-const perPage = computed(() => isMobile.value ? 4 : 6);
+const perPage = computed(() => isMobile.value ? 6 : 9);
 
 // Build the folder path based on selected category and subcategory
 const getFolderPath = (category: Category, subcategory: string | null): string => {
