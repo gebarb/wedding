@@ -27,5 +27,3 @@ export const S3_ERROR_FETCH_FAILED = 'Failed to fetch images from S3' as const;
 // S3 Default Values
 export const S3_DEFAULT_FOLDER = '' as const;
 export const S3_DEFAULT_PAGE = 1 as const;
-
-// TODO: Convert constants into a plugin
