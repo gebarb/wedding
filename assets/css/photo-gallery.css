@@ -96,26 +96,6 @@
   font-size: 0.95rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .gallery-modal {
-    max-width: 95%;
-    max-height: 95vh;
-  }
-  
-  .gallery-modal-image {
-    max-height: calc(95vh - 5rem);
-  }
-  
-  .close-button {
-    top: 0.5rem;
-    right: 0.5rem;
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
-  }
-}
-
 /* Pagination Controls */
 .pagination-controls {
   display: flex;

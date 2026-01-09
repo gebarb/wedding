@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-const title = ref("Home");
+const title = ref("Save The Date");
 
 useHead({
     meta: [{ property: 'og:title', content: `Ebarb Wedding - ${title.value}` }],
@@ -14,5 +14,5 @@ useHead({
 </script>
 
 <style lang="css">
-    @import url("~/assets/css/home.css");
+    @import url("~/assets/css/save-the-date.css");
 </style>

@@ -198,13 +198,8 @@ const fetchImages = async () => {
   } catch (err) {
     // Silently handle errors without showing them in the UI
     console.error('Error fetching images:', err);
-    // Clear any existing images on error
     images.value = [];
-    // Keep loading state true to show the loading indicator
     isLoading.value = true;
-  } finally {
-    // Don't set isLoading to false in the finally block
-    // We want to keep the loading state when there's an error
   }
 };
 
@@ -223,8 +218,6 @@ const previousPage = () => {
   }
 };
 
-// Image dimensions for modal
-const imageDimensions = ref<{width: number, height: number} | null>(null);
 // Debounce utility
 const debounce = <F extends (...args: any[]) => void>(fn: F, delay: number) => {
   let timeoutId: ReturnType<typeof setTimeout>;
