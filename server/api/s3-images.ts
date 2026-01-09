@@ -1,39 +1,48 @@
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { 
+  S3_BUCKET_NAME,
+  S3_REGION,
+  S3_CDN_URL,
+  S3_MAX_ITEMS_PER_PAGE,
+  S3_DEFAULT_ITEMS_PER_PAGE,
+  S3_ERROR_METHOD_NOT_ALLOWED,
+  S3_ERROR_ONLY_GET_ALLOWED,
+  S3_ERROR_FETCH_FAILED,
+  S3_DEFAULT_FOLDER,
+  S3_DEFAULT_PAGE
+} from '~/util/constants';
 
 export default defineEventHandler(async (event) => {
   // Ensure this is a GET request
   if (event.node.req.method !== 'GET') {
     return createError({
       statusCode: 405,
-      statusMessage: 'Method not allowed',
-      data: 'Only GET requests are supported'
+      statusMessage: S3_ERROR_METHOD_NOT_ALLOWED,
+      data: S3_ERROR_ONLY_GET_ALLOWED
     });
   }
 
-  const s3Config = {
-    bucketName: 'ebarb-wedding', 
-    region: 'us-east-2',
-    cdnUrl: ''
-  };
-
   // Initialize S3 client for public bucket
   const s3Client = new S3Client({
-    region: s3Config.region,
+    region: S3_REGION,
     credentials: { accessKeyId: "", secretAccessKey: "" },
     signer: { sign: async req => req },
   });
 
   try {
-    // Get query parameters
+    // Get query parameters with defaults from constants
     const query = getQuery(event);
-    const folder = query.folder?.toString() || '';
-    const page = Math.max(1, parseInt(query.page?.toString() || '1'));
-    const perPage = Math.min(100, Math.max(1, parseInt(query.perPage?.toString() || '10')));
+    const folder = query.folder?.toString() || S3_DEFAULT_FOLDER;
+    const page = Math.max(S3_DEFAULT_PAGE, parseInt(query.page?.toString() || S3_DEFAULT_PAGE.toString()));
+    const perPage = Math.min(
+      S3_MAX_ITEMS_PER_PAGE, 
+      Math.max(1, parseInt(query.perPage?.toString() || S3_DEFAULT_ITEMS_PER_PAGE.toString()))
+    );
     const prefix = folder.endsWith('/') ? folder : `${folder}/`;
     
-    // First, list all objects to get the total count
+    // List objects parameters
     const listParams = {
-      Bucket: s3Config.bucketName,
+      Bucket: S3_BUCKET_NAME,
       Prefix: prefix,
       Delimiter: '/'
     };
@@ -88,9 +97,9 @@ const allImages = allObjects
     const images = paginatedItems.map((file) => {
       // Encode each part of the key separately to handle special characters
       const encodedKey = file.Key.split('/').map(encodeURIComponent).join('/');
-      const imageUrl = s3Config.cdnUrl 
-        ? `${s3Config.cdnUrl}/${encodedKey}`
-        : `https://${s3Config.bucketName}.s3.${s3Config.region}.amazonaws.com/${encodedKey}`;
+      const imageUrl = S3_CDN_URL 
+        ? `${S3_CDN_URL}/${encodedKey}`
+        : `https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${encodedKey}`;
       
       return {
         key: file.Key,
@@ -114,10 +123,11 @@ const allImages = allObjects
     };
   } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('S3 Error:', errorMessage);
     
     throw createError({
       statusCode: 500,
-      statusMessage: `Failed to fetch images from S3: ${errorMessage}`,
+      statusMessage: `${S3_ERROR_FETCH_FAILED}: ${errorMessage}`,
     });
   }
 });

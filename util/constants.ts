@@ -12,4 +12,20 @@ export const THE_KNOT_URL: string =
   "https://www.theknot.com/us/alessandra-rodriguez-and-grayson-ebarb-sep-2025/rsvp";
 export const VENMO_URL: string = "https://www.venmo.com/u/ebarbwedding";
 
+// S3 Configuration
+export const S3_BUCKET_NAME = 'ebarb-wedding' as const;
+export const S3_REGION = 'us-east-2' as const;
+export const S3_CDN_URL = '' as const;
+export const S3_MAX_ITEMS_PER_PAGE = 100 as const;
+export const S3_DEFAULT_ITEMS_PER_PAGE = 10 as const;
+
+// S3 Error Messages
+export const S3_ERROR_METHOD_NOT_ALLOWED = 'Method not allowed' as const;
+export const S3_ERROR_ONLY_GET_ALLOWED = 'Only GET requests are supported' as const;
+export const S3_ERROR_FETCH_FAILED = 'Failed to fetch images from S3' as const;
+
+// S3 Default Values
+export const S3_DEFAULT_FOLDER = '' as const;
+export const S3_DEFAULT_PAGE = 1 as const;
+
 // TODO: Convert constants into a plugin
