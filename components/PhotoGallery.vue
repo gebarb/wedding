@@ -34,11 +34,13 @@
         class="gallery-grid" 
         :style="{ '--columns': columns, '--gap': '1rem' }"
       >
-        <div
+        <NuxtLink
           v-for="(image, index) in images"
           :key="image.key || index"
+          :to="image.src"
+          target="_blank"
+          rel="noopener noreferrer"
           class="gallery-item"
-          @click="openModal(image)"
         >
           <div class="aspect-w-1 aspect-h-1 w-full">
             <img
@@ -51,7 +53,7 @@
             />
             <div v-if="!image.loaded" class="image-placeholder"></div>
           </div>
-        </div>
+        </NuxtLink>
       </div>
 
       <!-- Loading indicator -->
@@ -85,42 +87,6 @@
         </button>
       </div>
 
-      <!-- Modal for full-size image -->
-      <div 
-        v-if="isModalOpen" 
-        class="gallery-modal-overlay"
-        :class="{ 'visible': isModalOpen }"
-        @click.self="closeModal"
-        @click.stop
-      >
-        <div class="gallery-modal" @click.stop>
-          <button 
-            class="close-button" 
-            @click="closeModal"
-            aria-label="Close modal"
-          >
-            <font-awesome-icon icon="fa-solid fa-x" />
-          </button>
-          <div v-if="selectedImage" class="gallery-modal-content">
-            <transition name="fade">
-              <div v-if="showLoading" class="image-loading">
-                <div class="spinner"></div>
-                <span>Loading image...</span>
-              </div>
-            </transition>
-            <img 
-              :key="selectedImage.src"
-              :src="selectedImage.src" 
-              :alt="selectedImage.alt"
-              class="gallery-modal-image"
-              :class="{ 'opacity-0': !isImageLoaded }"
-              loading="eager"
-              decoding="async"
-              @load="handleImageLoad"
-            />
-          </div>
-        </div>
-      </div>
     </div>
   </ClientOnly>
 </template>
@@ -152,11 +118,6 @@ const showSubcategories = computed(() =>
   selectedCategory.value && categorySubcategories[selectedCategory.value] !== null
 );
 
-// Modal state
-const isModalOpen = ref(false);
-const selectedImage = ref<{src: string, alt: string} | null>(null);
-const isImageLoaded = ref(false);
-const showLoading = ref(false);
 
 // Responsive settings
 const screenWidth = ref(process.client ? window.innerWidth : 0);
@@ -264,38 +225,6 @@ const previousPage = () => {
 
 // Image dimensions for modal
 const imageDimensions = ref<{width: number, height: number} | null>(null);
-
-const updateDimensions = () => {
-  if (process.client) {
-    imageDimensions.value = {
-      width: Math.min(window.innerWidth * 0.9, 1200),
-      height: Math.min(window.innerHeight * 0.9, 800)
-    };
-  } else {
-    imageDimensions.value = { width: 800, height: 600 };
-  }
-};
-
-// Modal methods
-const openModal = (image: { src: string, alt: string }) => {
-  selectedImage.value = image;
-  isModalOpen.value = true;
-  isImageLoaded.value = false;
-  showLoading.value = true;
-  document.body.style.overflow = 'hidden';
-};
-
-const closeModal = () => {
-  isModalOpen.value = false;
-  selectedImage.value = null;
-  document.body.style.overflow = '';
-};
-
-const handleImageLoad = () => {
-  isImageLoaded.value = true;
-  showLoading.value = false;
-};
-
 // Debounce utility
 const debounce = <F extends (...args: any[]) => void>(fn: F, delay: number) => {
   let timeoutId: ReturnType<typeof setTimeout>;
@@ -304,6 +233,43 @@ const debounce = <F extends (...args: any[]) => void>(fn: F, delay: number) => {
     timeoutId = setTimeout(() => fn.apply(this, args), delay);
   };
 };
+
+// Update screen width with debounce
+const updateScreenWidth = debounce(() => {
+  if (process.client) {
+    const newWidth = window.innerWidth;
+    if (screenWidth.value !== newWidth) {
+      screenWidth.value = newWidth;
+    }
+  }
+}, 150);
+
+// Lifecycle hooks
+const handleScreenResize = debounce(() => {
+  if (process.client) {
+    screenWidth.value = window.innerWidth;
+  }
+}, 100);
+
+onMounted(() => {
+  if (!process.client) return;
+  
+  // Initial screen width check and logging
+  updateScreenWidth();
+  
+  window.addEventListener('resize', handleScreenResize);
+  
+  // Initial fetch
+  if (categories.length > 0) {
+    selectedCategory.value = categories[0];
+  }
+});
+
+onBeforeUnmount(() => {
+  if (!process.client) return;
+  
+  window.removeEventListener('resize', handleScreenResize);
+});
 
 // Watch for category changes
 watch(selectedCategory, (newCategory) => {
@@ -327,49 +293,6 @@ watch(selectedSubcategory, () => {
     currentPage.value = 1;
     fetchImages();
   }
-});
-
-// Update screen width with debounce
-const updateScreenWidth = debounce(() => {
-  if (process.client) {
-    const newWidth = window.innerWidth;
-    if (screenWidth.value !== newWidth) {
-      screenWidth.value = newWidth;
-    }
-  }
-}, 150);
-
-// Lifecycle hooks
-const handleResize = debounce(updateDimensions, 100);
-const handleScreenResize = debounce(updateScreenWidth, 100);
-
-const handleEscape = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && isModalOpen.value) {
-    closeModal();
-  }
-};
-
-onMounted(() => {
-  if (!process.client) return;
-  
-  // Initial screen width check and logging
-  updateScreenWidth();
-  
-  updateDimensions();
-  window.addEventListener('resize', handleResize);
-  window.addEventListener('resize', handleScreenResize);
-  document.addEventListener('keydown', handleEscape);
-  
-  // Initial fetch
-  fetchImages();
-});
-
-onBeforeUnmount(() => {
-  if (!process.client) return;
-  
-  window.removeEventListener('resize', handleResize);
-  window.removeEventListener('resize', handleScreenResize);
-  document.removeEventListener('keydown', handleEscape);
 });
 </script>
 
