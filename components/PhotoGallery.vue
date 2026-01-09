@@ -65,6 +65,16 @@
       <!-- Pagination Controls -->
       <div v-if="totalPages > 1" class="pagination-controls">
         <button 
+          @click="firstPage" 
+          :disabled="currentPage === 1" 
+          class="pagination-button pagination-first"
+          :class="{ 'disabled': currentPage === 1 }"
+          aria-label="First page"
+        >
+          <font-awesome-icon :icon="['fas', 'angles-left']" />
+        </button>
+        
+        <button 
           @click="previousPage" 
           :disabled="currentPage === 1" 
           class="pagination-button pagination-prev"
@@ -84,6 +94,16 @@
           aria-label="Next page"
         >
           <font-awesome-icon :icon="['fas', 'chevron-right']" />
+        </button>
+        
+        <button 
+          @click="lastPage" 
+          :disabled="currentPage === totalPages" 
+          class="pagination-button pagination-last"
+          :class="{ 'disabled': currentPage === totalPages }"
+          aria-label="Last page"
+        >
+          <font-awesome-icon :icon="['fas', 'angles-right']" />
         </button>
       </div>
 
@@ -204,6 +224,20 @@ const fetchImages = async () => {
 };
 
 // Pagination methods
+const firstPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value = 1;
+    fetchImages();
+  }
+};
+
+const lastPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value = totalPages.value;
+    fetchImages();
+  }
+};
+
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
