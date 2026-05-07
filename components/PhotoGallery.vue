@@ -129,13 +129,13 @@ const router = useRouter();
 const isInitializing = ref(true);
 
 // Category and Subcategory types
-type Category = 'Proposal' | 'Wedding' /*| 'Honeymoon'*/;
+type Category = 'Proposal' | 'Wedding' | 'Honeymoon';
 
 // Subcategory configuration
 const categorySubcategories: Record<Category, string[] | null> = {
   'Proposal': null, // No subcategories for Proposal
   'Wedding': ['Ceremony', 'Reception', 'Dancing', 'Exit', 'Details', 'Bridal Party', 'First Look', 'Family', 'Portraits'],
-  // 'Honeymoon': ['Positano', 'Rome', 'Florence']
+  'Honeymoon': ['Pompeii', 'Positano & Capri', 'Rome', 'Vatican', 'Colosseum', 'Tuscany', 'Florence']
 };
 
 // State
@@ -260,7 +260,7 @@ const perPage = computed(() => isMobile.value ? 6 : 9);
 // Build the folder path based on selected category and subcategory
 const getFolderPath = (category: Category, subcategory: string | null): string => {
   return subcategory 
-    ? `${category.toLowerCase()}/${subcategory.replaceAll(' ', '-').toLowerCase()}`
+    ? `${category.toLowerCase()}/${subcategory.replaceAll(' & ', '-').replaceAll(' ', '-').toLowerCase()}`
     : category.toLowerCase();
 };
 
@@ -338,6 +338,7 @@ const fetchImages = async () => {
     isLoading.value = false;
   } catch (err) {
     // Silently handle errors without showing them in the UI
+    console.error('Error fetching images:', err);
     images.value = [];
     isLoading.value = true;
   }
