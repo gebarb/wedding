@@ -133,16 +133,16 @@
   align-items: center;
   padding: 4rem 0;
   gap: 1rem;
-  color: #4a5568;
+  color: rgba(165, 42, 42, 0.7);
   font-size: 1.1rem;
 }
 
 .spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid rgba(74, 85, 104, 0.2);
+  border: 3px solid rgba(165, 42, 42, 0.2);
   border-radius: 50%;
-  border-top-color: #4a5568;
+  border-top-color: brown;
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -156,6 +156,42 @@
   padding: 2rem 0;
   color: #718096;
   font-style: italic;
+}
+
+/* No Images Found */
+.no-images-found {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: rgba(165, 42, 42, 0.7);
+}
+
+.no-images-icon {
+  font-size: 4rem;
+  color: rgba(165, 42, 42, 0.3);
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.no-images-found h3 {
+  font-size: 1.5rem;
+  color: brown;
+  margin-bottom: 1rem;
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .no-images-found {
+    padding: 3rem 1rem;
+  }
+  
+  .no-images-icon {
+    font-size: 3rem;
+  }
+  
+  .no-images-found h3 {
+    font-size: 1.25rem;
+  }
 }
 
 /* Responsive Adjustments */

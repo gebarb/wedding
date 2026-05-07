@@ -56,6 +56,14 @@
         </NuxtLink>
       </div>
 
+      <!-- No images found splash message -->
+      <div v-if="noImagesFound" class="no-images-found">
+        <div class="no-images-icon">
+          <font-awesome-icon :icon="['fas', 'image']" />
+        </div>
+        <h3>No photos found</h3>
+      </div>
+
       <!-- Loading indicator -->
       <div v-if="isLoading" class="loading-indicator">
         <div class="spinner"></div>
@@ -256,6 +264,11 @@ const isMobile = computed(() => screenWidth.value < 768);
 
 const columns = computed(() => isMobile.value ? 2 : 3);
 const perPage = computed(() => isMobile.value ? 6 : 9);
+
+// Computed property to detect when no images are found
+const noImagesFound = computed(() => {
+  return !isLoading.value && images.value.length === 0 && selectedCategory.value && (!showSubcategories.value || selectedSubcategory.value);
+});
 
 // Build the folder path based on selected category and subcategory
 const getFolderPath = (category: Category, subcategory: string | null): string => {
