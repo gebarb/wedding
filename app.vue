@@ -6,15 +6,15 @@
   <NuxtRouteAnnouncer />
   <NuxtLoadingIndicator :throttle=0 :height=8 />
   <NuxtLayout>
-    <Menu @open-modal="toggleModal"></Menu>
+    <!-- <Menu @open-modal="toggleModal"></Menu> -->
     <NuxtPage />
-    <Footer @open-modal="toggleModal"></Footer>
+    <!-- <Footer @open-modal="toggleModal"></Footer> -->
   </NuxtLayout>
-    <RegistryModal 
-      v-if="showModal" 
-      :is-open="showModal" 
-      @close-modal="toggleModal" 
-    />
+  <!-- <RegistryModal 
+    v-if="showModal" 
+    :is-open="showModal" 
+    @close-modal="toggleModal" 
+  /> -->
 </template>
 
 <script setup lang="ts">
