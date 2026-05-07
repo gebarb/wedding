@@ -112,13 +112,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 // State for images and pagination
 const images = ref<Array<{src: string, alt: string, key: string, loaded: boolean}>>([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const isLoading = ref(true);
+
+// Router access for URL state management
+const route = useRoute();
+const router = useRouter();
+
+// Flag to prevent URL updates during initialization
+const isInitializing = ref(true);
 
 // Category and Subcategory types
 type Category = 'Proposal' | 'Wedding' /*| 'Honeymoon'*/;
@@ -138,6 +146,109 @@ const showSubcategories = computed(() =>
   selectedCategory.value && categorySubcategories[selectedCategory.value] !== null
 );
 
+// URL state management functions
+const updateURL = () => {
+  // Skip URL updates during initialization to prevent overwriting URL state
+  if (isInitializing.value) return;
+  
+  const query: Record<string, string> = {};
+  
+  if (selectedCategory.value) {
+    const categoryIndex = categories.indexOf(selectedCategory.value);
+    if (categoryIndex !== -1) {
+      query.c = categoryIndex.toString();
+    }
+  }
+  
+  if (selectedSubcategory.value && selectedCategory.value) {
+    const subcategories = categorySubcategories[selectedCategory.value];
+    if (subcategories) {
+      const subcategoryIndex = subcategories.indexOf(selectedSubcategory.value);
+      if (subcategoryIndex !== -1) {
+        query.s = subcategoryIndex.toString();
+      }
+    }
+  }
+  
+  if (currentPage.value > 1) {
+    query.p = currentPage.value.toString();
+  }
+  
+  router.replace({ query });
+};
+
+// URL parameter parsing functions
+const parseCategoryFromURL = (query: any) => {
+  let categoryIndex = 0; // Default to index 0
+  if (query.c && typeof query.c === 'string') {
+    const parsedIndex = parseInt(query.c, 10);
+    if (!isNaN(parsedIndex) && parsedIndex >= 0 && parsedIndex < categories.length) {
+      categoryIndex = parsedIndex;
+    } else {
+      categoryIndex = 0;
+    }
+  }
+  return categories[categoryIndex];
+};
+
+const parseSubcategoryFromURL = (query: any, category: Category) => {
+  let subcategoryFromURL: string | null = null; // Default to user selection
+  if (query.s && typeof query.s === 'string') {
+    const subcategoryIndex = parseInt(query.s, 10);
+    const subcategories = categorySubcategories[category];
+    
+    if (subcategories && subcategories.length > 0) {
+      if (!isNaN(subcategoryIndex) && subcategoryIndex >= 0 && subcategoryIndex < subcategories.length) {
+        subcategoryFromURL = subcategories[subcategoryIndex];
+      } else {
+        subcategoryFromURL = null;
+      }
+    } else {
+      // Category has no subcategories
+      subcategoryFromURL = null;
+    }
+  }
+  return subcategoryFromURL;
+};
+
+const parsePageFromURL = (query: any) => {
+  let pageFromURL = 1; // Default to page 1
+  if (query.p && typeof query.p === 'string') {
+    const page = parseInt(query.p, 10);
+    if (!isNaN(page) && page > 0 && page <= 10000) { // Large upper bound for basic validation
+      pageFromURL = page;
+    } else {
+      pageFromURL = 1;
+    }
+  }
+  return pageFromURL;
+};
+
+// Validation functions
+const validatePageSubcategoryDependency = (page: number, category: Category, subcategory: string | null) => {
+  const categoryHasSubcategories = categorySubcategories[category] !== null;
+  if (page > 1 && categoryHasSubcategories && !subcategory) {
+    return { page: 1, subcategory: null };
+  }
+  return { page, subcategory };
+};
+
+const initializeFromURL = () => {
+  const query = route.query;
+  
+  // Parse URL parameters
+  const category = parseCategoryFromURL(query);
+  const subcategory = parseSubcategoryFromURL(query, category);
+  const page = parsePageFromURL(query);
+  
+  // Validate page-subcategory dependency
+  const validatedState = validatePageSubcategoryDependency(page, category, subcategory);
+  
+  // Set final values
+  selectedCategory.value = category;
+  selectedSubcategory.value = validatedState.subcategory;
+  currentPage.value = validatedState.page;
+};
 
 // Responsive settings
 const screenWidth = ref(process.client ? window.innerWidth : 0);
@@ -214,10 +325,19 @@ const fetchImages = async () => {
       key: item.ETag || item.key || Math.random().toString(),
       loaded: false
     }));
+    
+    // Validate page number against total pages after fetch
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = 1;
+      updateURL();
+      // Re-fetch with corrected page
+      fetchImages();
+      return;
+    }
+    
     isLoading.value = false;
   } catch (err) {
     // Silently handle errors without showing them in the UI
-    console.error('Error fetching images:', err);
     images.value = [];
     isLoading.value = true;
   }
@@ -286,10 +406,28 @@ onMounted(() => {
   
   window.addEventListener('resize', handleScreenResize);
   
-  // Initial fetch
-  if (categories.length > 0) {
-    selectedCategory.value = categories[0];
-  }
+  // Initialize state from URL
+  initializeFromURL();
+  
+  // Allow URL updates after initialization is complete
+  nextTick(() => {
+    isInitializing.value = false;
+    
+    // Force immediate fetch if we have a valid state after initialization
+    // This ensures state is properly synchronized before checking conditions
+    setTimeout(() => {
+      const hasValidState = selectedCategory.value && (!categorySubcategories[selectedCategory.value] || selectedSubcategory.value);
+      const categoryHasSubcategories = selectedCategory.value ? categorySubcategories[selectedCategory.value] !== null : false;
+      const pageSpecifiedWithoutSubcategory = categoryHasSubcategories && !selectedSubcategory.value && currentPage.value > 1;
+      
+      if (hasValidState && !pageSpecifiedWithoutSubcategory) {
+        fetchImages();
+      } else {
+        // No valid state - ensure loading is false to prevent spinner
+        isLoading.value = false;
+      }
+    }, 0); // Small delay to ensure state is synchronized
+  });
 });
 
 onBeforeUnmount(() => {
@@ -300,10 +438,16 @@ onBeforeUnmount(() => {
 
 // Watch for category changes
 watch(selectedCategory, (newCategory) => {
+  // Skip during initialization to prevent overwriting URL state
+  if (isInitializing.value) return;
+  
   // Reset subcategory when category changes
   selectedSubcategory.value = null;
   // Reset to first page
   currentPage.value = 1;
+  
+  // Update URL
+  updateURL();
   
   // Only fetch if the category doesn't have subcategories
   if (newCategory && !categorySubcategories[newCategory]) {
@@ -316,11 +460,30 @@ watch(selectedCategory, (newCategory) => {
 
 // Watch for subcategory changes
 watch(selectedSubcategory, () => {
+  // Skip during initialization to prevent overwriting URL state
+  if (isInitializing.value) return;
+  
   if (selectedCategory.value) {
     currentPage.value = 1;
+    updateURL();
     fetchImages();
   }
 });
+
+// Watch for page changes
+watch(currentPage, () => {
+  updateURL();
+  if (selectedCategory.value && (!showSubcategories.value || selectedSubcategory.value)) {
+    fetchImages();
+  }
+});
+
+// Initial fetch after all state is set up
+watch([selectedCategory, selectedSubcategory], () => {
+  if (selectedCategory.value && (!showSubcategories.value || selectedSubcategory.value)) {
+    fetchImages();
+  }
+}, { immediate: true });
 </script>
 
 <style>
