@@ -15,7 +15,7 @@ export const VENMO_URL: string = "https://www.venmo.com/u/ebarbwedding";
 // S3 Configuration
 export const S3_BUCKET_NAME = 'ebarb-wedding' as const;
 export const S3_REGION = 'us-east-2' as const;
-export const S3_CDN_URL = '' as const;
+export const S3_CDN_URL = 'https://d1u8wkk31rkp9h.cloudfront.net' as const;
 export const S3_MAX_ITEMS_PER_PAGE = 100 as const;
 export const S3_DEFAULT_ITEMS_PER_PAGE = 10 as const;
 

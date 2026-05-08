@@ -109,7 +109,7 @@ const allImages = allObjects
       };
     });
     
-    return {
+    const response = {
       statusCode: 200,
       body: images,
       meta: {
@@ -121,6 +121,12 @@ const allImages = allObjects
         hasPreviousPage: currentPage > 1
       }
     };
+
+    // Set cache headers for CloudFront (long-term caching for static images)
+    setHeader(event, 'Cache-Control', 'public, max-age=86400, s-maxage=604800, immutable'); // 1day browser, 7days edge
+    setHeader(event, 'Vary', 'Accept-Encoding');
+    
+    return response;
   } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('S3 Error:', errorMessage);
