@@ -1,5 +1,4 @@
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { setHeader } from 'h3';
 import { 
   S3_BUCKET_NAME,
   S3_REGION,
@@ -124,8 +123,8 @@ const allImages = allObjects
     };
 
     // Set cache headers for CloudFront (long-term caching for static images)
-    setHeader(event, 'Cache-Control', 'public, max-age=86400, s-maxage=604800, immutable'); // 1day browser, 7days edge
-    setHeader(event, 'Vary', 'Accept-Encoding');
+    event.node.res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=604800, immutable'); // 1day browser, 7days edge
+    event.node.res.setHeader('Vary', 'Accept-Encoding');
     
     return response;
   } catch (error: any) {

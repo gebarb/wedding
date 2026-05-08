@@ -4,7 +4,7 @@ export default defineNuxtConfig({
     head: {
       charset: "utf-8",
       link: [
-        { rel: "preconnect", href: "https://ebarb-wedding.s3.us-east-2.amazonaws.com" }
+        { rel: "preconnect", href: "https://d1u8wkk31rkp9h.cloudfront.net" }
       ],
       viewport: "width=device-width, initial-scale=1",
     },
