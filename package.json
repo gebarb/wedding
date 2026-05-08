@@ -5,10 +5,7 @@
   "engines": {
     "node": ">=22.12.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@parcel/watcher", "esbuild", "sharp"]
-  },
-  "scripts": {
+    "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
