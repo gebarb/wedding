@@ -79,7 +79,7 @@ const allImages = allObjects
     // Extract the number from the filename (e.g., "Grand_Marlin_Proposal-1.jpg" -> 1)
     const getNumber = (key: string) => {
       const match = key.match(/-(\d+)\./);
-      return match ? parseInt(match[1], 10) : 0;
+      return match ? parseInt(match[1] || '0', 10) : 0;
     };
     
     return getNumber(a.Key) - getNumber(b.Key);
